@@ -19,8 +19,8 @@ package com.faddensoft.breakout;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.os.ConditionVariable;
-import android.util.Log;
 import android.view.MotionEvent;
+import com.research.GLRecorder.GLRecorder;
 
 /**
  * View object for the GL surface.  Wraps the renderer.
@@ -40,6 +40,7 @@ public class GameSurfaceView extends GLSurfaceView {
 
         setEGLContextClientVersion(2);      // Request OpenGL ES 2.0
 
+        setEGLConfigChooser(GLRecorder.getEGLConfigChooser());
         // Create our Renderer object, and tell the GLSurfaceView code about it.  This also
         // starts the renderer thread, which will be calling the various callback methods
         // in the GameSurfaceRenderer class.

@@ -21,6 +21,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.ConditionVariable;
 import android.util.Log;
+import com.research.GLRecorder.GLRecorder;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -48,6 +49,7 @@ public class GameSurfaceRenderer implements GLSurfaceView.Renderer {
     private GameSurfaceView mSurfaceView;
     private GameState mGameState;
     private TextResources.Configuration mTextConfig;
+    private EGLConfig mEGLConfig;
 
 
     /**
@@ -72,6 +74,7 @@ public class GameSurfaceRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         if (EXTRA_CHECK) Util.checkGlError("onSurfaceCreated start");
+        mEGLConfig = config;
 
         // Generate programs and data.
         BasicAlignedRect.createProgram();
@@ -139,6 +142,8 @@ public class GameSurfaceRenderer implements GLSurfaceView.Renderer {
          */
 
         if (EXTRA_CHECK) Util.checkGlError("onSurfaceChanged start");
+        GLRecorder.init(width, height, mEGLConfig);
+        GLRecorder.setRecordOutputFile("/sdcard/breakout.mp4");
 
         float arenaRatio = GameState.ARENA_HEIGHT / GameState.ARENA_WIDTH;
         int x, y, viewWidth, viewHeight;
@@ -158,6 +163,9 @@ public class GameSurfaceRenderer implements GLSurfaceView.Renderer {
         Log.d(TAG, "onSurfaceChanged w=" + width + " h=" + height);
         Log.d(TAG, " --> x=" + x + " y=" + y + " gw=" + viewWidth + " gh=" + viewHeight);
 
+        x = y = 0;
+        viewWidth = width;
+        viewHeight = height;
         GLES20.glViewport(x, y, viewWidth, viewHeight);
 
         mViewportWidth = viewWidth;
@@ -185,6 +193,12 @@ public class GameSurfaceRenderer implements GLSurfaceView.Renderer {
      */
     @Override
     public void onDrawFrame(GL10 unused) {
+        GLRecorder.beginDraw();
+        draw();
+        GLRecorder.endDraw();
+    }
+
+    private void draw() {
         GameState gameState = mGameState;
 
         gameState.calculateNextFrame();
@@ -281,6 +295,7 @@ public class GameSurfaceRenderer implements GLSurfaceView.Renderer {
          * ourselves we'd need to do something more.
          */
 
+        GLRecorder.stopRecording();
         mGameState.save();
 
         syncObj.open();
@@ -309,5 +324,8 @@ public class GameSurfaceRenderer implements GLSurfaceView.Renderer {
         //Log.v(TAG, "touch at x=" + (int) x + " y=" + (int) y + " --> arenaX=" + (int) arenaX);
 
         mGameState.movePaddle(arenaX);
+
+        // Starting recording when user touch the screen(means playing)
+        GLRecorder.startRecording();
     }
 }

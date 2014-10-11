@@ -1,0 +1,3 @@
+[submodule "GLRecorder"]
+	path = GLRecorder
+	url = https://github.com/lokii/GLRecorder.git
